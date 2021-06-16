@@ -14,16 +14,16 @@ class Config:
      SQLALCHEMY_TRACK_MODIFICATIONS = False   
      
      JWT_SECRET_KEY = environ.get('JWT_SECRET_KEY')
-     JWT_ACCESS_TOKEN_EXPIRES = environ.get('JWT_ACCESS_TOKEN_EXPIJWT_SECRET_KEY')
+     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
 
 class DevelopmentConfig(Config):
      DEBUG = True
-     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + path.join(basedir, environ.get('SQLALCHEMY_DATABASE_URI'))  
+     SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{environ.get('DATABASE_USER')}:{environ.get('DATABASE_PASSWORD')}@{environ.get('DATABASE_HOST')}/{environ.get('DATABASE_DB_DEV')}"
 
 class TestingConfig(Config):
      TESTING = True
      DEBUG = True
-     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + path.join(basedir, environ.get('SQLALCHEMY_DATABASE_URI'))  
+     SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{environ.get('DATABASE_USER')}:{environ.get('DATABASE_PASSWORD')}@{environ.get('DATABASE_HOST')}/{environ.get('DATABASE_DB_TEST')}"
 
 class StagingConfig(Config):
      DEBUG = True
@@ -38,3 +38,4 @@ app_config = {
      'staging': StagingConfig,
      'production':ProductionConfig
 }
+

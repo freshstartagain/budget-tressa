@@ -23,8 +23,8 @@ def signup():
         
          data = {
              "message":f"{new_user.username} is created.",
-             "access_token":User.access_token(new_user.username),
-             "refresh_token":User.refresh_token(new_user.username)
+             "access_token":f"{User.access_token(new_user.username)}",
+             "refresh_token":f"{User.refresh_token(new_user.username)}"
          }
 
          return success(data=data, status_code=201)
@@ -49,8 +49,8 @@ def login():
         
          data = {
              "message":f"Logged in as {user.username}.",
-             "access_token":User.access_token(user.username),
-             "refresh_token":User.refresh_token(user.username)
+             "access_token":f"{User.access_token(user.username)}",
+             "refresh_token":f"{User.refresh_token(user.username)}"
          }
 
          return success(data=data)
