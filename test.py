@@ -55,6 +55,9 @@ class BudgetTressaTestCase(unittest.TestCase):
 
          return data['data']['access_token'], data['data']['refresh_token']
 
+     def headers(self, token):
+         return {'Authorization':f"Bearer {token}"}
+
      def test_health_check(self):
          res = self.client().get(f"{self.url_prefix}/health-check")
          self.assertEqual(res.status_code, 200)
@@ -92,20 +95,29 @@ class BudgetTressaTestCase(unittest.TestCase):
          # Invalid Password 
          res = self.client().post(f"{self.url_prefix}/login", json=self.invalid_password)
          self.assertEqual(res.status_code, 401)
-         self.assertIn(f"Password is wrong.", str(res.data))    
+         self.assertIn(f"Password is wrong.", str(res.data))   
 
          # Refresh Token  
-         res = self.client().post(f"{self.url_prefix}/refresh-token", headers={'Authorization':f"Bearer {self.refresh_token}"})
+         res = self.client().post(
+             f"{self.url_prefix}/refresh-token", 
+             headers=self.headers(self.refresh_token)
+         )
          self.assertEqual(res.status_code, 200)
          self.assertIn(f"Token refreshed for", str(res.data))
 
          # Revoke Access Token  
-         res = self.client().post(f"{self.url_prefix}/revoke-access-token", headers={'Authorization':f"Bearer {self.access_token}"})
+         res = self.client().post(
+             f"{self.url_prefix}/revoke-access-token", 
+             headers=self.headers(self.access_token)
+         )
          self.assertEqual(res.status_code, 200)
          self.assertIn(f"Access token has been revoked.", str(res.data))  
 
          # Revoke Refresh Token    
-         res = self.client().post(f"{self.url_prefix}/revoke-refresh-token", headers={'Authorization':f"Bearer {self.refresh_token}"})
+         res = self.client().post(
+             f"{self.url_prefix}/revoke-refresh-token", 
+             headers=self.headers(self.refresh_token)
+         )
          self.assertEqual(res.status_code, 200)
          self.assertIn(f"Refresh token has been revoked.", str(res.data))
      
@@ -119,29 +131,47 @@ class BudgetTressaTestCase(unittest.TestCase):
              self.refresh_token = tokens[1]
          
          # Add Category  
-         res = self.client().post(f"{self.url_prefix}/categories", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category)
+         res = self.client().post(
+             f"{self.url_prefix}/categories", 
+             headers=self.headers(self.access_token), 
+             json=self.category
+         )
          self.assertEqual(res.status_code, 201)
-         self.assertIn(f"{self.category['name']} is created.", str(res.data))
+         self.assertIn(f"success", str(res.data))
 
          # Get All Category 
-         res = self.client().get(f"{self.url_prefix}/categories", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category)
+         res = self.client().get(
+             f"{self.url_prefix}/categories", 
+             headers=self.headers(self.access_token), 
+             json=self.category
+         )
          self.assertEqual(res.status_code, 200)
          self.assertIn(f"success", str(res.data))
 
          # Get Category  
-         res = self.client().get(f"{self.url_prefix}/categories/1", headers={'Authorization':f"Bearer {self.access_token}"})
+         res = self.client().get(
+             f"{self.url_prefix}/categories/1",
+             headers=self.headers(self.access_token)
+         )
          self.assertEqual(res.status_code, 200)
          self.assertIn(f"success", str(res.data))
 
          # Update Category 
-         res = self.client().put(f"{self.url_prefix}/categories/1", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category_update)
+         res = self.client().put(
+             f"{self.url_prefix}/categories/1", 
+             headers=self.headers(self.access_token), 
+             json=self.category_update
+         )
          self.assertEqual(res.status_code, 200)
-         self.assertIn(f"{self.category_update['name']} is updated.", str(res.data))
+         self.assertIn(f"success", str(res.data))
          
          # Delete Category 
-         res = self.client().delete(f"{self.url_prefix}/categories/1", headers={'Authorization':f"Bearer {self.access_token}"})
+         res = self.client().delete(
+             f"{self.url_prefix}/categories/1", 
+             headers=self.headers(self.access_token)
+         )
          self.assertEqual(res.status_code, 200)
-         self.assertIn(f"{self.category['name']} is deleted.", str(res.data))
+         self.assertIn(f"success", str(res.data))
 
      def test_item(self):
          tokens = self.get_login_tokens()
@@ -152,34 +182,55 @@ class BudgetTressaTestCase(unittest.TestCase):
              self.refresh_token = tokens[1]
 
          # Add Category  
-         res = self.client().post(f"{self.url_prefix}/categories", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category)
+         res = self.client().post(
+             f"{self.url_prefix}/categories", 
+             headers=self.headers(self.access_token), 
+             json=self.category
+         )
          self.assertEqual(res.status_code, 201)
-         self.assertIn(f"{self.category['name']} is created.", str(res.data))
+         self.assertIn(f"success", str(res.data))
 
          # Get All Items
-         res = self.client().get(f"{self.url_prefix}/categories/1/items", headers={'Authorization':f"Bearer {self.access_token}"})
+         res = self.client().get(
+             f"{self.url_prefix}/categories/1/items",
+              headers=self.headers(self.access_token)
+         )
          self.assertEqual(res.status_code, 200)
          self.assertIn(f"success", str(res.data))
 
          # Add Item  
-         res = self.client().post(f"{self.url_prefix}/categories/1/items", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.item)
+         res = self.client().post(
+             f"{self.url_prefix}/categories/1/items", 
+             headers=self.headers(self.access_token), 
+             json=self.item
+         )
          self.assertEqual(res.status_code, 201)
-         self.assertIn(f"{self.item['name']} is created.", str(res.data))
+         self.assertIn(f"success", str(res.data))
 
          # Get Item 
-         res = self.client().get(f"{self.url_prefix}/categories/1/items/1", headers={'Authorization':f"Bearer {self.access_token}"})
+         res = self.client().get(
+             f"{self.url_prefix}/categories/1/items/1",
+             headers=self.headers(self.access_token)
+         )
          self.assertEqual(res.status_code, 200)
          self.assertIn(f"success", str(res.data))
 
          # Update Item  
-         res = self.client().put(f"{self.url_prefix}/categories/1/items/1", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.item_update)
+         res = self.client().put(
+             f"{self.url_prefix}/categories/1/items/1", 
+             headers=self.headers(self.access_token), 
+             json=self.item_update
+         )
          self.assertEqual(res.status_code, 200)
-         self.assertIn(f"{self.item_update['name']} is updated.", str(res.data))
+         self.assertIn(f"success", str(res.data))
 
          # Delete Item  
-         res = self.client().delete(f"{self.url_prefix}/categories/1/items/1", headers={'Authorization':f"Bearer {self.access_token}"})
+         res = self.client().delete(
+             f"{self.url_prefix}/categories/1/items/1", 
+             headers=self.headers(self.access_token)
+         )
          self.assertEqual(res.status_code, 200)
-         self.assertIn(f"{self.item_update['name']} is deleted.", str(res.data))
+         self.assertIn(f"success", str(res.data))
 
      def tearDown(self):
          with self.app.app_context():
