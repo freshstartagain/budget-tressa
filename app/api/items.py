@@ -36,9 +36,7 @@ def item(category_id):
              item = Item(category.id, name, balance)
              item.add()
 
-             data = {
-                 "message":f"{item.name} is created."
-             } 
+             data = item_schema.dump(item)
 
              return success(data=data, status_code=201)
 
@@ -48,7 +46,9 @@ def item(category_id):
              item_schema = ItemSchema(many=True)
              items = Item.query.filter_by(category_id=category.id).all()
              
-             return success(data=item_schema.dump(items))
+             data = item_schema.dump(items)
+             
+             return success(data=data)
 
      except Exception as e:
          return error(data={"error":e})
@@ -77,7 +77,10 @@ def get_update_delete_item(category_id, item_id):
          
          if request.method == 'GET':
              item = validate_category_item(category_id, item_id)
-             return success(data=item_schema.dump(item))
+
+             data = item_schema.dump(item)
+
+             return success(data=data)
              
          if request.method == 'PUT':
              content = request.get_json()
@@ -89,9 +92,7 @@ def get_update_delete_item(category_id, item_id):
 
              item.update(name, activity, balance)
 
-             data = {
-                 "message":f"{item.name} is updated."
-             } 
+             data = item_schema.dump(item)
 
              return success(data=data)
 
@@ -100,9 +101,7 @@ def get_update_delete_item(category_id, item_id):
              
              item.delete()
 
-             data = {
-                 "message":f"{item.name} is deleted."
-             }
+             data = item_schema.dump(item)
 
              return success(data=data)
 

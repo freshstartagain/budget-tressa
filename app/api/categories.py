@@ -26,9 +26,7 @@ def category():
              category = Category(user.id, name, balance)
              category.add()
 
-             data = {
-                 "message":f"{category.name} is created."
-             } 
+             data = category_schema.dump(category) 
 
              return success(data=data, status_code=201)
 
@@ -36,7 +34,9 @@ def category():
              category_schema = CategorySchema(many=True)
              categories = Category.query.filter(Category.user_id == user.id).all()
              
-             return success(data=category_schema.dump(categories))
+             data = category_schema.dump(categories)
+             
+             return success(data=data)
 
      except Exception as e:
          return error(data={"error":e})
@@ -59,8 +59,9 @@ def get_update_delete_category(category_id):
          
          if request.method == 'GET':
              category = validate_category(category_id)
-
-             return success(data=category_schema.dump(category))
+             
+             data = category_schema.dump(category) 
+             return success(data=data)
              
          if request.method == 'PUT':
              content = request.get_json()
@@ -75,9 +76,7 @@ def get_update_delete_category(category_id):
 
              category.update(name, activity, balance)
 
-             data = {
-                 "message":f"{category.name} is updated."
-             } 
+             data = category_schema.dump(category) 
 
              return success(data=data)
 
@@ -86,9 +85,7 @@ def get_update_delete_category(category_id):
              
              category.delete()
 
-             data = {
-                 "message":f"{category.name} is deleted."
-             } 
+             data = category_schema.dump(category) 
 
              return success(data=data)
 
