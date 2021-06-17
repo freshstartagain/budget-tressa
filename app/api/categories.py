@@ -28,7 +28,7 @@ def category():
 
              data = {
                  "message":f"{category.name} is created."
-             } | category_schema.dump(category)
+             } 
 
              return success(data=data, status_code=201)
 
@@ -41,7 +41,7 @@ def category():
      except Exception as e:
          return error(data={"error":e})
 
-@api.route('/categories/<int:category_id>', methods=['GET','POST'])
+@api.route('/categories/<int:category_id>', methods=['GET','PUT','DELETE'])
 @jwt_required()
 def get_update_delete_category(category_id):
      def validate_category(category_id):
@@ -68,13 +68,16 @@ def get_update_delete_category(category_id):
              activity = content['activity']
              balance = content['balance']
 
-             category = validate_category(category_id)
+             category = Category.query.filter_by(id=category_id, user_id=user.id).first()
+
+             if not category:
+                 return error(data=category_error_message, status_code=404)
 
              category.update(name, activity, balance)
 
              data = {
                  "message":f"{category.name} is updated."
-             } | category_schema.dump(category)
+             } 
 
              return success(data=data)
 

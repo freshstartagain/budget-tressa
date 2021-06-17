@@ -2,7 +2,7 @@ import unittest
 import ujson
 
 from app import create_app, db
-from app.models import User
+from app.models import User, Category
 
 class BudgetTressaTestCase(unittest.TestCase):
      def setUp(self):
@@ -16,6 +16,15 @@ class BudgetTressaTestCase(unittest.TestCase):
          self.signup_user = {
              "username":"test_username_2",
              "password":"test-password"
+         }
+         self.category = {
+             "name":"Daily Expenses",
+             "balance":200
+         }
+         self.category_update = {
+             "name":"Daily Expenses",
+             "activity":"100",
+             "balance":100
          }
          
          with self.app.app_context():
@@ -58,6 +67,23 @@ class BudgetTressaTestCase(unittest.TestCase):
          self.assertIn(f"Refresh token has been revoked.", str(res.data))
 
      # Category 
+     def test_add_category(self):
+         res = self.client().post(f"{self.url_prefix}/categories", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category)
+         self.assertEqual(res.status_code, 201)
+         self.assertIn(f"{self.category['name']} is created.", str(res.data))
+
+     def test_get_categories(self):
+         res = self.client().get(f"{self.url_prefix}/categories", headers={'Authorization':f"Bearer {self.access_token}"})
+         self.assertEqual(res.status_code, 200)
+
+     def test_get_category(self):
+         res = self.client().get(f"{self.url_prefix}/categories/1", headers={'Authorization':f"Bearer {self.access_token}"})
+         self.assertEqual(res.status_code, 200)
+
+    #  def test_put_category(self):
+    #      res = self.client().put(f"{self.url_prefix}/categories/1", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category_update)
+    #      self.assertEqual(res.status_code, 200)
+    #      self.assertIn(f"{self.category_update['name']} is updated.", str(res.data))
 
      def tearDown(self):
          with self.app.app_context():
