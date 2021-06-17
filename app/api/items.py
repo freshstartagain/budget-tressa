@@ -6,7 +6,7 @@ from .. schema import ItemSchema
 from .. services.response_handler import success, error
 from . import api
 
-@api.route('/categories/<int:category_id>', methods=['POST'])
+@api.route('/categories/<int:category_id>/items', methods=['GET','POST'])
 @jwt_required()
 def item(category_id):
      def validate_category(category_id):
@@ -38,7 +38,7 @@ def item(category_id):
 
              data = {
                  "message":f"{item.name} is created."
-             } | item_schema.dump(item)
+             } 
 
              return success(data=data, status_code=201)
 
@@ -53,7 +53,7 @@ def item(category_id):
      except Exception as e:
          return error(data={"error":e})
 
-@api.route('/categories/<int:category_id>/items/<int:item_id>', methods=['POST'])
+@api.route('/categories/<int:category_id>/items/<int:item_id>', methods=['GET','PUT','DELETE'])
 @jwt_required()
 def get_update_delete_item(category_id, item_id):
      def validate_category_item(category_id, item_id):
@@ -91,7 +91,7 @@ def get_update_delete_item(category_id, item_id):
 
              data = {
                  "message":f"{item.name} is updated."
-             } | item_schema.dump(item)
+             } 
 
              return success(data=data)
 
@@ -102,7 +102,7 @@ def get_update_delete_item(category_id, item_id):
 
              data = {
                  "message":f"{item.name} is deleted."
-             } | item_schema.dump(item)
+             }
 
              return success(data=data)
 

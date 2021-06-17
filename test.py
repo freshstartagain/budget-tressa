@@ -9,13 +9,19 @@ class BudgetTressaTestCase(unittest.TestCase):
          self.app = create_app(config_name='testing')
          self.client = self.app.test_client
          self.url_prefix = "/api/v1"
-         self.login_user = {
+         self.access_token = None
+         self.refresh_token = None
+         self.user =  {
              "username":"test_username",
              "password":"test_password"
          }
-         self.signup_user = {
-             "username":"test_username_2",
-             "password":"test-password"
+         self.invalid_username = {
+             "username":"test_username1",
+             "password":"test_password"  
+         }
+         self.invalid_password = {
+             "username":"test_username",
+             "password":"test_password1"  
          }
          self.category = {
              "name":"Daily Expenses",
@@ -26,64 +32,154 @@ class BudgetTressaTestCase(unittest.TestCase):
              "activity":"100",
              "balance":100
          }
-         
+         self.item = {
+             "name":"Dinner",
+             "balance":100
+         }
+         self.item_update = {
+             "name":"Dinner",
+             "activity":"50",
+             "balance":50
+         }
+
          with self.app.app_context():
              db.create_all()
 
-             new_user = User(self.login_user['username'], self.login_user['password'])
-             new_user.add()
+     def get_login_tokens(self):
+         # Signup  
+         res = self.client().post(f"{self.url_prefix}/signup", json=self.user)
+         # Login 
+         res = self.client().post(f"{self.url_prefix}/login", json=self.user)
+      
+         data = ujson.loads(res.data)
 
-             self.access_token = User.access_token(new_user.username)
-             self.refresh_token = User.refresh_token(new_user.username)
+         return data['data']['access_token'], data['data']['refresh_token']
 
      def test_health_check(self):
          res = self.client().get(f"{self.url_prefix}/health-check")
          self.assertEqual(res.status_code, 200)
      
      # Auth 
-     def test_signup(self):
-         res = self.client().post(f"{self.url_prefix}/signup", json=self.signup_user)
+     def test_auth(self):
+         # Signup  
+         res = self.client().post(f"{self.url_prefix}/signup", json=self.user)
          self.assertEqual(res.status_code, 201)
-         self.assertIn(f"{self.signup_user['username']} is created.", str(res.data))
+         self.assertIn(f"{self.user['username']} is created.", str(res.data))
 
-     def test_login(self):
-         res = self.client().post(f"{self.url_prefix}/login", json=self.login_user)
-         self.assertEqual(res.status_code, 200) 
-         self.assertIn(f"Logged in as {self.login_user['username']}", str(res.data))
-    
-     def test_refresh_token(self):
+         # Duplicate User
+         res = self.client().post(f"{self.url_prefix}/signup", json=self.user)
+         self.assertEqual(res.status_code, 409)
+         self.assertIn(f"Username already taken", str(res.data)) 
+
+         # Login 
+         res = self.client().post(f"{self.url_prefix}/login", json=self.user)
+         self.assertEqual(res.status_code, 200)
+         self.assertIn(f"Logged in as {self.user['username']}.", str(res.data))        
+
+         data = ujson.loads(res.data)
+
+         if self.access_token == None:
+             self.access_token = data['data']['access_token']
+
+         if self.refresh_token == None:
+             self.refresh_token = data['data']['refresh_token']
+
+         # Invalid Username 
+         res = self.client().post(f"{self.url_prefix}/login", json=self.invalid_username)
+         self.assertEqual(res.status_code, 401)
+         self.assertIn(f"User doesn\\\'t exist.", str(res.data))       
+
+         # Invalid Password 
+         res = self.client().post(f"{self.url_prefix}/login", json=self.invalid_password)
+         self.assertEqual(res.status_code, 401)
+         self.assertIn(f"Password is wrong.", str(res.data))    
+
+         # Refresh Token  
          res = self.client().post(f"{self.url_prefix}/refresh-token", headers={'Authorization':f"Bearer {self.refresh_token}"})
          self.assertEqual(res.status_code, 200)
          self.assertIn(f"Token refreshed for", str(res.data))
 
-     def test_revoke_access_token(self):
+         # Revoke Access Token  
          res = self.client().post(f"{self.url_prefix}/revoke-access-token", headers={'Authorization':f"Bearer {self.access_token}"})
          self.assertEqual(res.status_code, 200)
-         self.assertIn(f"Access token has been revoked.", str(res.data))
+         self.assertIn(f"Access token has been revoked.", str(res.data))  
 
-     def test_revoke_refresh_token(self):
+         # Revoke Refresh Token    
          res = self.client().post(f"{self.url_prefix}/revoke-refresh-token", headers={'Authorization':f"Bearer {self.refresh_token}"})
          self.assertEqual(res.status_code, 200)
          self.assertIn(f"Refresh token has been revoked.", str(res.data))
+     
+     # Category  
+     def test_category(self):
+         tokens = self.get_login_tokens()
+         if self.access_token == None:
+             self.access_token = tokens[0]
 
-     # Category 
-     def test_add_category(self):
+         if self.refresh_token == None:
+             self.refresh_token = tokens[1]
+         
+         # Add Category  
          res = self.client().post(f"{self.url_prefix}/categories", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category)
          self.assertEqual(res.status_code, 201)
          self.assertIn(f"{self.category['name']} is created.", str(res.data))
 
-     def test_get_categories(self):
-         res = self.client().get(f"{self.url_prefix}/categories", headers={'Authorization':f"Bearer {self.access_token}"})
+         # Get All Category 
+         res = self.client().get(f"{self.url_prefix}/categories", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category)
          self.assertEqual(res.status_code, 200)
+         self.assertIn(f"success", str(res.data))
 
-     def test_get_category(self):
+         # Get Category  
          res = self.client().get(f"{self.url_prefix}/categories/1", headers={'Authorization':f"Bearer {self.access_token}"})
          self.assertEqual(res.status_code, 200)
+         self.assertIn(f"success", str(res.data))
 
-    #  def test_put_category(self):
-    #      res = self.client().put(f"{self.url_prefix}/categories/1", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category_update)
-    #      self.assertEqual(res.status_code, 200)
-    #      self.assertIn(f"{self.category_update['name']} is updated.", str(res.data))
+         # Update Category 
+         res = self.client().put(f"{self.url_prefix}/categories/1", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category_update)
+         self.assertEqual(res.status_code, 200)
+         self.assertIn(f"{self.category_update['name']} is updated.", str(res.data))
+         
+         # Delete Category 
+         res = self.client().delete(f"{self.url_prefix}/categories/1", headers={'Authorization':f"Bearer {self.access_token}"})
+         self.assertEqual(res.status_code, 200)
+         self.assertIn(f"{self.category['name']} is deleted.", str(res.data))
+
+     def test_item(self):
+         tokens = self.get_login_tokens()
+         if self.access_token == None:
+             self.access_token = tokens[0]
+
+         if self.refresh_token == None:
+             self.refresh_token = tokens[1]
+
+         # Add Category  
+         res = self.client().post(f"{self.url_prefix}/categories", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.category)
+         self.assertEqual(res.status_code, 201)
+         self.assertIn(f"{self.category['name']} is created.", str(res.data))
+
+         # Get All Items
+         res = self.client().get(f"{self.url_prefix}/categories/1/items", headers={'Authorization':f"Bearer {self.access_token}"})
+         self.assertEqual(res.status_code, 200)
+         self.assertIn(f"success", str(res.data))
+
+         # Add Item  
+         res = self.client().post(f"{self.url_prefix}/categories/1/items", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.item)
+         self.assertEqual(res.status_code, 201)
+         self.assertIn(f"{self.item['name']} is created.", str(res.data))
+
+         # Get Item 
+         res = self.client().get(f"{self.url_prefix}/categories/1/items/1", headers={'Authorization':f"Bearer {self.access_token}"})
+         self.assertEqual(res.status_code, 200)
+         self.assertIn(f"success", str(res.data))
+
+         # Update Item  
+         res = self.client().put(f"{self.url_prefix}/categories/1/items/1", headers={'Authorization':f"Bearer {self.access_token}"}, json=self.item_update)
+         self.assertEqual(res.status_code, 200)
+         self.assertIn(f"{self.item_update['name']} is updated.", str(res.data))
+
+         # Delete Item  
+         res = self.client().delete(f"{self.url_prefix}/categories/1/items/1", headers={'Authorization':f"Bearer {self.access_token}"})
+         self.assertEqual(res.status_code, 200)
+         self.assertIn(f"{self.item_update['name']} is deleted.", str(res.data))
 
      def tearDown(self):
          with self.app.app_context():

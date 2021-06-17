@@ -108,18 +108,15 @@ class Item(db.Model):
          db.session.add(self)
          db.session.commit()
     
-     @classmethod
-     def update(cls, id, name, activity, balance):
-         category = cls.query.filter_by(id=id).first()
-         category.name = name
-         category.activity = activity
-         category.balance = balance
+     def update(self,name, activity, balance):
+         self.name = name
+         self.activity = activity
+         self.balance = balance
          
          db.session.commit()
 
-         return category
+         return self
 
-     @classmethod
      def delete(self):
          db.session.delete(self)
          db.session.commit()

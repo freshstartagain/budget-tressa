@@ -88,7 +88,7 @@ def get_update_delete_category(category_id):
 
              data = {
                  "message":f"{category.name} is deleted."
-             } | category_schema.dump(category)
+             } 
 
              return success(data=data)
 
