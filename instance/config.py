@@ -18,12 +18,12 @@ class Config:
 
 class DevelopmentConfig(Config):
      DEBUG = True
-     SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{environ.get('DATABASE_USER')}:{environ.get('DATABASE_PASSWORD')}@{environ.get('DATABASE_HOST')}/{environ.get('DATABASE_DB_DEV')}"
+     SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{environ.get('DATABASE_USER')}:{environ.get('DATABASE_PASSWORD')}@db:{environ.get('DATABASE_HOST')}/{environ.get('DATABASE_DB_DEV')}"
 
 class TestingConfig(Config):
      TESTING = True
      DEBUG = True
-     SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{environ.get('DATABASE_USER')}:{environ.get('DATABASE_PASSWORD')}@{environ.get('DATABASE_HOST')}/{environ.get('DATABASE_DB_TEST')}"
+     SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{environ.get('DATABASE_USER')}:{environ.get('DATABASE_PASSWORD')}@db:{environ.get('DATABASE_HOST')}/{environ.get('DATABASE_DB_TEST')}"
 
 class StagingConfig(Config):
      DEBUG = True
