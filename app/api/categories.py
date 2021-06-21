@@ -44,23 +44,19 @@ def category():
 @api.route('/categories/<int:category_id>', methods=['GET','PUT','DELETE'])
 @jwt_required()
 def get_update_delete_category(category_id):
-     def validate_category(category_id):
-         category = Category.query.filter_by(id=category_id, user_id=user.id).first()
-
-         if not category:
-             return error(data=category_error_message, status_code=404)
-
-         return category
-
      try:
          user = User.query.filter_by(username=get_jwt_identity()).first()
          category_schema = CategorySchema()
          category_error_message = {"error":"Category is not existing."}
          
          if request.method == 'GET':
-             category = validate_category(category_id)
+             category = Category.query.filter_by(id=category_id, user_id=user.id).first()
+
+             if not category:
+                 return error(data=category_error_message, status_code=404)
              
              data = category_schema.dump(category) 
+
              return success(data=data)
              
          if request.method == 'PUT':
@@ -81,7 +77,10 @@ def get_update_delete_category(category_id):
              return success(data=data)
 
          if request.method == 'DELETE':
-             category = validate_category(category_id)
+             category = Category.query.filter_by(id=category_id, user_id=user.id).first()
+
+             if not category:
+                 return error(data=category_error_message, status_code=404)
              
              category.delete()
 
