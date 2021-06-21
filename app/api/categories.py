@@ -44,49 +44,43 @@ def category():
 @api.route('/categories/<int:category_id>', methods=['GET','PUT','DELETE'])
 @jwt_required()
 def get_update_delete_category(category_id):
+     category_error_message = {"error":"Category is not existing."}
+
      try:
          user = User.query.filter_by(username=get_jwt_identity()).first()
          category_schema = CategorySchema()
-         category_error_message = {"error":"Category is not existing."}
-         
+
          if request.method == 'GET':
              category = Category.query.filter_by(id=category_id, user_id=user.id).first()
 
              if not category:
                  return error(data=category_error_message, status_code=404)
-             
-             data = category_schema.dump(category) 
+             else:
+                 return success(data=category_schema.dump(category))
 
-             return success(data=data)
-             
          if request.method == 'PUT':
              content = request.get_json()
              name = content['name']
              activity = content['activity']
              balance = content['balance']
-
+             
              category = Category.query.filter_by(id=category_id, user_id=user.id).first()
 
              if not category:
                  return error(data=category_error_message, status_code=404)
+             else:
+                 category.update(name, activity, balance)
 
-             category.update(name, activity, balance)
-
-             data = category_schema.dump(category) 
-
-             return success(data=data)
+                 return success(data=category_schema.dump(category))
 
          if request.method == 'DELETE':
              category = Category.query.filter_by(id=category_id, user_id=user.id).first()
 
              if not category:
                  return error(data=category_error_message, status_code=404)
-             
-             category.delete()
-
-             data = category_schema.dump(category) 
-
-             return success(data=data)
+             else:
+                 category.delete()
+                 return success(data=category_schema.dump(category))
 
      except Exception as e:
          return error(data={"error":e})
