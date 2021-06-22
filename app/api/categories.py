@@ -21,22 +21,18 @@ def category():
 
              if category:
                  return error(data={"error":"Category already existing."}, status_code=409)
-
+            
              category_schema = CategorySchema()
              category = Category(user.id, name, balance)
              category.add()
 
-             data = category_schema.dump(category) 
-
-             return success(data=data, status_code=201)
+             return success(data=category_schema.dump(category) , status_code=201)
 
          if request.method == 'GET':
              category_schema = CategorySchema(many=True)
              categories = Category.query.filter(Category.user_id == user.id).all()
              
-             data = category_schema.dump(categories)
-             
-             return success(data=data)
+             return success(data=category_schema.dump(categories))
 
      except Exception as e:
          return error(data={"error":e})
@@ -55,8 +51,8 @@ def get_update_delete_category(category_id):
 
              if not category:
                  return error(data=category_error_message, status_code=404)
-             else:
-                 return success(data=category_schema.dump(category))
+
+             return success(data=category_schema.dump(category))
 
          if request.method == 'PUT':
              content = request.get_json()
@@ -68,19 +64,19 @@ def get_update_delete_category(category_id):
 
              if not category:
                  return error(data=category_error_message, status_code=404)
-             else:
-                 category.update(name, activity, balance)
 
-                 return success(data=category_schema.dump(category))
+             category.update(name, activity, balance)
+
+             return success(data=category_schema.dump(category))
 
          if request.method == 'DELETE':
              category = Category.query.filter_by(id=category_id, user_id=user.id).first()
 
              if not category:
                  return error(data=category_error_message, status_code=404)
-             else:
-                 category.delete()
-                 return success(data=category_schema.dump(category))
+
+             category.delete()
+             return success(data=category_schema.dump(category))
 
      except Exception as e:
          return error(data={"error":e})

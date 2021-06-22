@@ -31,9 +31,7 @@ def item(category_id):
              item = Item(category.id, name, balance)
              item.add()
 
-             data = item_schema.dump(item)
-
-             return success(data=data, status_code=201)
+             return success(data=item_schema.dump(item), status_code=201)
 
          if request.method == 'GET':
              category = Category.query.filter_by(id=category_id, user_id=user.id).first()
@@ -43,10 +41,8 @@ def item(category_id):
 
              item_schema = ItemSchema(many=True)
              items = Item.query.filter_by(category_id=category.id).all()
-             
-             data = item_schema.dump(items)
-             
-             return success(data=data)
+                          
+             return success(data=item_schema.dump(items))
 
      except Exception as e:
          return error(data={"error":e})
@@ -71,9 +67,7 @@ def get_update_delete_item(category_id, item_id):
              if not item:
                  return error(data=item_error_message, status_code=404)
 
-             data = item_schema.dump(item)
-
-             return success(data=data)
+             return success(data=item_schema.dump(item))
              
          if request.method == 'PUT':
              content = request.get_json()
@@ -93,9 +87,7 @@ def get_update_delete_item(category_id, item_id):
 
              item.update(name, activity, balance)
 
-             data = item_schema.dump(item)
-
-             return success(data=data)
+             return success(data=item_schema.dump(item))
 
          if request.method == 'DELETE':
              category = Category.query.filter_by(id=category_id, user_id=user.id).first()
@@ -110,9 +102,7 @@ def get_update_delete_item(category_id, item_id):
              
              item.delete()
 
-             data = item_schema.dump(item)
-
-             return success(data=data)
+             return success(data=item_schema.dump(item))
 
      except Exception as e:
          return error(data={"error":e})
