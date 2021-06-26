@@ -4,6 +4,8 @@ services:
     container_name: budget-tressa
     command: python run.py run -h 0.0.0.0
     build: .
+    env_file:
+      - .env
     volumes:
       - .:/usr/src/app/
     ports: 
@@ -16,13 +18,8 @@ services:
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    environment: 
-      - POSTGRES_USER=budget_tressa_user
-      - POSTGRES_PASSWORD=budget_tressa_password
-      - POSTGRES_DB=budget_tressa_dev
-
+    env_file:
+      - .env
+      
 volumes:
     postgres_data:
-    
-
-
